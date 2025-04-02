@@ -5,7 +5,7 @@
 package com.example.sipre_backend.controlador;
 
 import com.example.sipre_backend.repositorio.UsuarioDAO;
-import com.mycompany.sipre.modelo.Usuario;
+import com.example.sipre_backend.modelo.Usuario;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

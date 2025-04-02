@@ -1,4 +1,4 @@
-package com.mycompany.sipre.modelo;
+package com.example.sipre_backend.modelo;
 
 import java.util.Date;
 

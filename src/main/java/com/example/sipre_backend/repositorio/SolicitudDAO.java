@@ -1,6 +1,6 @@
 package com.example.sipre_backend.repositorio;
 import com.example.sipre_backend.repositorio.db.MySQLConnection;
-import com.mycompany.sipre.modelo.Solicitud;
+import com.example.sipre_backend.modelo.Solicitud;
 
 import java.sql.*;
 import java.util.ArrayList;

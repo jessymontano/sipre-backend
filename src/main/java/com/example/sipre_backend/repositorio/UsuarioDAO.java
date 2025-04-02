@@ -1,7 +1,7 @@
 package com.example.sipre_backend.repositorio;
 
 
-import com.mycompany.sipre.modelo.Usuario;
+import com.example.sipre_backend.modelo.Usuario;
 import com.example.sipre_backend.repositorio.db.MySQLConnection;
 
 import java.sql.Connection;

@@ -1,7 +1,7 @@
 package com.example.sipre_backend.repositorio;
 
 import com.example.sipre_backend.repositorio.db.MySQLConnection;
-import com.mycompany.sipre.modelo.Documento;
+import com.example.sipre_backend.modelo.Documento;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

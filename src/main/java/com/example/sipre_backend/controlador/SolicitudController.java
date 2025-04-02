@@ -5,7 +5,7 @@
 package com.example.sipre_backend.controlador;
 
 import com.example.sipre_backend.repositorio.SolicitudDAO;
-import com.mycompany.sipre.modelo.Solicitud;
+import com.example.sipre_backend.modelo.Solicitud;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

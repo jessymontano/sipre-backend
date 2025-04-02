@@ -4,8 +4,8 @@
  */
 package com.example.sipre_backend.controlador;
 
+import com.example.sipre_backend.modelo.Documento;
 import com.example.sipre_backend.repositorio.DocumentoDAO;
-import com.mycompany.sipre.modelo.Documento;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
