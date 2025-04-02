@@ -1,0 +1,13 @@
+com\example\sipre_backend\SipreApplication.class
+com\example\sipre_backend\repositorio\UsuarioDAO.class
+com\example\sipre_backend\repositorio\SolicitudDAO.class
+com\example\sipre_backend\controlador\SolicitudController.class
+com\mycompany\sipre\modelo\Documento.class
+com\mycompany\sipre\modelo\Solicitud.class
+com\example\sipre_backend\repositorio\GenerarReportes.class
+com\mycompany\sipre\modelo\Inventario.class
+com\example\sipre_backend\controlador\UsuarioController.class
+com\example\sipre_backend\repositorio\DocumentoDAO.class
+com\mycompany\sipre\modelo\Usuario.class
+com\example\sipre_backend\controlador\DocumentoController.class
+com\example\sipre_backend\repositorio\db\MySQLConnection.class
