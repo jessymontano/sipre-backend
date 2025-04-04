@@ -1,3 +1,4 @@
+com\example\sipre_backend\config\AppConfig.class
 com\example\sipre_backend\SipreApplication.class
 com\example\sipre_backend\modelo\Usuario.class
 com\example\sipre_backend\repositorio\UsuarioDAO.class
@@ -11,4 +12,3 @@ com\example\sipre_backend\controlador\UsuarioController.class
 com\example\sipre_backend\repositorio\DocumentoDAO.class
 com\example\sipre_backend\controlador\DocumentoController.class
 com\example\sipre_backend\repositorio\db\MySQLConnection.class
-com\example\sipre_backend\controlador\GeneradorPDF.class

@@ -22,8 +22,8 @@ public class Usuario {
 
     private String rol;
     
-    public Usuario(String usuario, String nombre, String apellido, String email, String contrasena, String rol) {
-        this.usuario = usuario;
+    public Usuario(String nombre, String apellido, String email, String contrasena, String rol) {
+
         this.nombre = nombre;
         this.apellido = apellido;
         this.email = email;
@@ -31,10 +31,8 @@ public class Usuario {
         this.rol = rol;
     }
     
-    public String getUsuario() {
-        return usuario;
-    }
-    
+    public Usuario() {}
+
     public boolean verificarContrasena(String contrasenaIngresada) {
         return this.contrasena.equals(contrasenaIngresada);
     }
@@ -57,5 +55,25 @@ public class Usuario {
     
     public String getRol() {
         return rol;
+    }
+    
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+    
+    public void setApellido(String apellido) {
+        this.apellido = apellido;
+    }
+    
+    public void setEmail(String email) {
+        this.email = email;
+    }
+    
+    public void setContrasena(String contrasena) {
+        this.contrasena = contrasena;
+    }
+    
+    public void setRol(String rol) {
+        this.rol = rol;
     }
 }

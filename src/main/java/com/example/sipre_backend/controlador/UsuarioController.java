@@ -6,6 +6,7 @@ package com.example.sipre_backend.controlador;
 
 import com.example.sipre_backend.repositorio.UsuarioDAO;
 import com.example.sipre_backend.modelo.Usuario;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,12 @@ public class UsuarioController {
     
     public UsuarioController(UsuarioDAO usuarioDAO) {
         this.usuarioDAO = usuarioDAO;
+    }
+    
+    @GetMapping
+    public ResponseEntity<List<Usuario>> obtenerTodosLosUsuarios() {
+        List<Usuario> usuarios = usuarioDAO.obtenerTodosLosUsuarios();
+        return ResponseEntity.ok(usuarios);
     }
     
     @PostMapping("/registrar")
@@ -48,5 +55,23 @@ public class UsuarioController {
             return ResponseEntity.ok(usuario);
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+    
+    @PutMapping("/{nombreUsuario}")
+    public ResponseEntity<String> actualizarUsuario(@PathVariable String nombreUsuario, @RequestBody Usuario usuario) {
+        boolean actualizado = usuarioDAO.actualizarUsuario(usuario, nombreUsuario);
+        if (actualizado) {
+            return ResponseEntity.ok("Usuario actualizado exitosamente");
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al actualizar usuario");
+    }
+    
+    @DeleteMapping("/{nombreUsuario}")
+    public ResponseEntity<String> eliminarUsuario(@PathVariable String nombreUsuario) {
+        boolean eliminado = usuarioDAO.eliminarUsuario(nombreUsuario);
+        if (eliminado) {
+            return ResponseEntity.ok("Usuario eliminado exitosamente");
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al eliminar usuario");
     }
 }
