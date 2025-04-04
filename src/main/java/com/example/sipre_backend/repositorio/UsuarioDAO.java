@@ -67,26 +67,22 @@ public class UsuarioDAO {
             return false;
         }
     }
-   public boolean autenticar(String nombre, String contrasena) {
-    String query = "SELECT Contrasena FROM usuarios WHERE Nombre = ?";
+     public boolean autenticar(String Nombre, String Contrasena) {
+        String query = "SELECT * FROM usuarios WHERE Nombre = ? AND Contrasena = ?";
+        
+        try (Connection connection = MySQLConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, Nombre);
+            statement.setString(2, Contrasena); // Recuerda hashear la contraseña antes de compararla
 
-    try (Connection connection = MySQLConnection.getConnection();
-         PreparedStatement statement = connection.prepareStatement(query)) {
+            ResultSet resultSet = statement.executeQuery();
 
-        statement.setString(1, nombre);
-        ResultSet resultSet = statement.executeQuery();
+            return resultSet.next(); // Si hay un resultado, el usuario existe
 
-        if (resultSet.next()) {
-            String contrasenaAlmacenada = resultSet.getString("Contrasena");
-            return encoder.matches(contrasena, contrasenaAlmacenada);
-        } else {
-            return false; 
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
-
-    } catch (SQLException e) {
-        e.printStackTrace();
-        return false;
-    }
 }
     
     public Usuario getUsuario(String Usuario) {
