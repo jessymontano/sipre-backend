@@ -112,7 +112,7 @@ public class UsuarioDAO {
     }
     
     public boolean actualizarUsuario(Usuario usuario, String nombreUsuario) {
-        String query = "UPDATE sipre.usuario SET Nombre = ?, Apellido = ?, Email = ?, Contrasena = ? WHERE Nombre = ?";
+        String query = "UPDATE sipre.usuarios SET Nombre = ?, Apellido = ?, Email = ?, Contrasena = ? WHERE Nombre = ?";
 
         try (Connection connection = MySQLConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
