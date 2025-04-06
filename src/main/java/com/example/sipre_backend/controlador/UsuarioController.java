@@ -74,4 +74,16 @@ public class UsuarioController {
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al eliminar usuario");
     }
+
+    @PutMapping("/{nombreUsuario}/rol")
+    public ResponseEntity<String> modificarRol(
+            @PathVariable String nombreUsuario,
+            @RequestParam String nuevoRol) {
+
+        boolean actualizado = usuarioDAO.modificarRol(nombreUsuario, nuevoRol);
+        if (actualizado) {
+            return ResponseEntity.ok("Rol actualizado exitosamente");
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al actualizar el rol");
+    }
 }
