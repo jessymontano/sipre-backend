@@ -148,6 +148,24 @@ public class UsuarioDAO {
             return false;
         }
     }
+
+    public boolean modificarRol(String nombreUsuario, String nuevoRol) {
+        String query = "UPDATE sipre.usuarios SET Rol = ? WHERE Nombre = ?";
+
+        try (Connection connection = MySQLConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setString(1, nuevoRol);
+            statement.setString(2, nombreUsuario);
+
+            int filasAfectadas = statement.executeUpdate();
+            return filasAfectadas > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
 
 
