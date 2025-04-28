@@ -32,7 +32,7 @@ public class UsuarioController {
     
     @PostMapping("/registrar")
     public ResponseEntity<String> registrarUsuario(@RequestBody Usuario usuario) {
-        boolean resultado = usuarioDAO.agregarUsuario(usuario.getNombre(), usuario.getApellido(), usuario.getEmail(), usuario.getContrasena(), usuario.getRol());
+        boolean resultado = usuarioDAO.agregarUsuario(usuario.getNombreUsuario(), usuario.getNombre(), usuario.getApellido(), usuario.getEmail(), usuario.getContrasena(), usuario.getRol());
         if (resultado) {
             return ResponseEntity.status(HttpStatus.CREATED).body("Usuario registrado exitosamente");
         }
@@ -57,30 +57,30 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
     
-    @PutMapping("/{nombreUsuario}")
-    public ResponseEntity<String> actualizarUsuario(@PathVariable String nombreUsuario, @RequestBody Usuario usuario) {
-        boolean actualizado = usuarioDAO.actualizarUsuario(usuario, nombreUsuario);
+    @PutMapping("/{idUsuario}")
+    public ResponseEntity<String> actualizarUsuario(@PathVariable int idUsuario, @RequestBody Usuario usuario) {
+        boolean actualizado = usuarioDAO.actualizarUsuario(usuario, idUsuario);
         if (actualizado) {
             return ResponseEntity.ok("Usuario actualizado exitosamente");
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al actualizar usuario");
     }
     
-    @DeleteMapping("/{nombreUsuario}")
-    public ResponseEntity<String> eliminarUsuario(@PathVariable String nombreUsuario) {
-        boolean eliminado = usuarioDAO.eliminarUsuario(nombreUsuario);
+    @DeleteMapping("/{idUsuario}")
+    public ResponseEntity<String> eliminarUsuario(@PathVariable int idUsuario) {
+        boolean eliminado = usuarioDAO.eliminarUsuario(idUsuario);
         if (eliminado) {
             return ResponseEntity.ok("Usuario eliminado exitosamente");
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al eliminar usuario");
     }
 
-    @PutMapping("/{nombreUsuario}/rol")
+    @PutMapping("/{idUsuario}/rol")
     public ResponseEntity<String> modificarRol(
-            @PathVariable String nombreUsuario,
+            @PathVariable int idUsuario,
             @RequestParam String nuevoRol) {
 
-        boolean actualizado = usuarioDAO.modificarRol(nombreUsuario, nuevoRol);
+        boolean actualizado = usuarioDAO.modificarRol(idUsuario, nuevoRol);
         if (actualizado) {
             return ResponseEntity.ok("Rol actualizado exitosamente");
         }

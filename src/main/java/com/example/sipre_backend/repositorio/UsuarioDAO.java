@@ -28,6 +28,8 @@ public class UsuarioDAO {
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 Usuario usuario = new Usuario();
+                usuario.setId(resultSet.getInt("ID_Usuario"));
+                usuario.setNombreUsuario(resultSet.getString("NombreUsuario"));
                 usuario.setNombre(resultSet.getString("Nombre"));
                 usuario.setApellido(resultSet.getString("Apellido"));
                 usuario.setEmail(resultSet.getString("Email"));
@@ -43,18 +45,19 @@ public class UsuarioDAO {
         return null;
     }
 
-    public boolean agregarUsuario(String Nombre, String Apellido, String Email, String Contrasena, String Rol) {
-        String query = "INSERT INTO sipre.usuarios (Nombre, Apellido, Email, Contrasena, Rol) VALUES (?, ?, ?, ?, ?)";
+    public boolean agregarUsuario(String nombreUsuario, String Nombre, String Apellido, String Email, String Contrasena, String Rol) {
+        String query = "INSERT INTO sipre.usuarios (NombreUsuario, Nombre, Apellido, Email, Contrasena, Rol) VALUES (?, ?, ?, ?, ?, ?)";
 
         //hashear la contraseña antes de insertarla
         String hash = encoder.encode(Contrasena);
         try (Connection connection = MySQLConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(query)) {
 
-            statement.setString(1, Nombre);
-            statement.setString(2, Apellido);
-            statement.setString(3, Email);
-            statement.setString(4, hash);
-            statement.setString(5, Rol);
+            statement.setString(1, nombreUsuario);
+            statement.setString(2, Nombre);
+            statement.setString(3, Apellido);
+            statement.setString(4, Email);
+            statement.setString(5, hash);
+            statement.setString(6, Rol);
 
             int rowsAffected = statement.executeUpdate();
             return rowsAffected > 0;
@@ -67,7 +70,7 @@ public class UsuarioDAO {
 
     public boolean autenticar(String nombre, String contrasena) {
 
-        String query = "SELECT Contrasena FROM usuarios WHERE Nombre = ?";
+        String query = "SELECT Contrasena FROM usuarios WHERE NombreUsuario = ?";
 
         try (Connection connection = MySQLConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, nombre);
@@ -84,16 +87,18 @@ public class UsuarioDAO {
         }
     }
 
-    public Usuario getUsuario(String Usuario) {
-        String query = "SELECT * FROM usuarios WHERE Nombre = ?";
+    public Usuario getUsuario(String nombreUsuario) {
+        String query = "SELECT * FROM usuarios WHERE NombreUsuario = ?";
 
         try (Connection connection = MySQLConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(query)) {
 
-            statement.setString(1, Usuario);
+            statement.setString(1, nombreUsuario);
 
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 return new Usuario(
+                        resultSet.getInt("ID_Usuario"),
+                        resultSet.getString("NombreUsuario"),
                         resultSet.getString("Nombre"),
                         resultSet.getString("Apellido"),
                         resultSet.getString("Email"),
@@ -109,16 +114,40 @@ public class UsuarioDAO {
         return null; // Retorna null si no se encuentra el usuario
     }
 
-    public boolean actualizarUsuario(Usuario usuario, String nombreUsuario) {
-        String query = "UPDATE sipre.usuarios SET Nombre = ?, Apellido = ?, Email = ?, Contrasena = ? WHERE Nombre = ?";
+    public boolean actualizarUsuario(Usuario usuario, int idUsuario) {
+        String query = "UPDATE usuarios SET NombreUsuario = ?, Nombre = ?, Apellido = ?, Email = ? "
+                + (usuario.getContrasena() != null && !usuario.getContrasena().isEmpty()
+                ? ", Contrasena = ? " : "")
+                + "WHERE ID_Usuario = ?";
 
         try (Connection connection = MySQLConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(query)) {
 
-            statement.setString(1, usuario.getNombre());
-            statement.setString(2, usuario.getApellido());
-            statement.setString(3, usuario.getEmail());
-            statement.setString(4, encoder.encode(usuario.getContrasena()));
-            statement.setString(5, nombreUsuario);
+            int paramIndex = 1;
+            statement.setString(paramIndex++, usuario.getNombreUsuario());
+            statement.setString(paramIndex++, usuario.getNombre());
+            statement.setString(paramIndex++, usuario.getApellido());
+            statement.setString(paramIndex++, usuario.getEmail());
+
+            // Solo actualizar contraseña si no está vacía
+            if (usuario.getContrasena() != null && !usuario.getContrasena().isEmpty()) {
+                statement.setString(paramIndex++, encoder.encode(usuario.getContrasena()));
+            }
+
+            statement.setInt(paramIndex, idUsuario);
+
+            return statement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean eliminarUsuario(int id) {
+        String query = "DELETE FROM sipre.usuarios WHERE ID_Usuario = ?";
+
+        try (Connection connection = MySQLConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setInt(1, id);
 
             int filasAfectadas = statement.executeUpdate();
             return filasAfectadas > 0;
@@ -129,29 +158,13 @@ public class UsuarioDAO {
         }
     }
 
-    public boolean eliminarUsuario(String nombreUsuario) {
-        String query = "DELETE FROM sipre.usuarios WHERE Nombre = ?";
-
-        try (Connection connection = MySQLConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(query)) {
-
-            statement.setString(1, nombreUsuario);
-
-            int filasAfectadas = statement.executeUpdate();
-            return filasAfectadas > 0;
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public boolean modificarRol(String nombreUsuario, String nuevoRol) {
-        String query = "UPDATE sipre.usuarios SET Rol = ? WHERE Nombre = ?";
+    public boolean modificarRol(int id, String nuevoRol) {
+        String query = "UPDATE sipre.usuarios SET Rol = ? WHERE ID_Usuario = ?";
 
         try (Connection connection = MySQLConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(query)) {
 
             statement.setString(1, nuevoRol);
-            statement.setString(2, nombreUsuario);
+            statement.setInt(2, id);
 
             int filasAfectadas = statement.executeUpdate();
             return filasAfectadas > 0;

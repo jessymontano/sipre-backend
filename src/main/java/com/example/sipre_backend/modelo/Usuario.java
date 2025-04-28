@@ -4,26 +4,23 @@
  */
 package com.example.sipre_backend.modelo;
 
-import java.time.LocalDate;
 
 /**
  *
  * @author jessica
  */
 public class Usuario {
-    private String usuario;
-
+    private int id;
+    private String nombreUsuario;
     private String nombre;
-
     private String apellido;
-
     private String email;
     private String contrasena;
-
     private String rol;
     
-    public Usuario(String nombre, String apellido, String email, String contrasena, String rol) {
-
+    public Usuario(int id, String nombreUsuario, String nombre, String apellido, String email, String contrasena, String rol) {
+        this.id = id;
+        this.nombreUsuario = nombreUsuario;
         this.nombre = nombre;
         this.apellido = apellido;
         this.email = email;
@@ -31,10 +28,16 @@ public class Usuario {
         this.rol = rol;
     }
     
-    public Usuario() {}
-
-    public boolean verificarContrasena(String contrasenaIngresada) {
-        return this.contrasena.equals(contrasenaIngresada);
+    public Usuario() {
+        
+    }
+    
+    public int getId() {
+        return id;
+    }
+    
+    public String getNombreUsuario() {
+        return nombreUsuario;
     }
     
     public String getNombre() {
@@ -55,6 +58,14 @@ public class Usuario {
     
     public String getRol() {
         return rol;
+    }
+    
+    public void setId(int id) {
+        this.id = id;
+    }
+    
+    public void setNombreUsuario(String nombreUsuario) {
+        this.nombreUsuario = nombreUsuario;
     }
     
     public void setNombre(String nombre) {
