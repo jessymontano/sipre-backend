@@ -5,12 +5,10 @@ import java.util.Date;
 public class Documento {
     private int folio;
     private String tipoDocumento;
+    private int idTipo;
     private String estatus;
     private int cantidadDocumentos;
 
-    public Date fecha;
-
-    public String motivo;
 
 
     public Documento(int Folio, String TipoDocumento, String Estatus, int CantidadDocumentos) {
@@ -53,20 +51,14 @@ public class Documento {
         this.cantidadDocumentos = CantidadDocumentos;
     }
 
-    public Date getFecha() {
-        return fecha;
+    public int getIdTipo() {
+        return idTipo;
     }
 
-    public void setFecha(Date fecha) {
-        this.fecha = fecha;
+    public void setIdTipo(int id) {
+        this.idTipo = id;
     }
-
-    public String getMotivo() {
-        return motivo;
-    }
-    public void setMotivo(String motivo) {
-        this.motivo = motivo;
     }
 
 
-}
+

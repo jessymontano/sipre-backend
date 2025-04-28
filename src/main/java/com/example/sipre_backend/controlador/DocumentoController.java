@@ -1,10 +1,7 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.example.sipre_backend.controlador;
 
 import com.example.sipre_backend.modelo.Documento;
+import com.example.sipre_backend.modelo.TipoDocumento;
 import com.example.sipre_backend.repositorio.DocumentoDAO;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,10 +9,6 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-/**
- *
- * @author jessica
- */
 @RestController
 @RequestMapping("/documentos")
 public class DocumentoController {
@@ -24,9 +17,15 @@ public class DocumentoController {
 
     @PostMapping
     public ResponseEntity<String> agregarDocumento(@RequestBody Documento documento) {
+        // obtener el id del tipo
+        int idTipo = documentoDAO.obtenerIdTipoPorNombre(documento.getTipoDocumento());
+        if (idTipo == -1) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tipo de documento no válido");
+        }
+
         boolean resultado = documentoDAO.agregarDocumento(
                 documento.getFolio(),
-                documento.getTipoDocumento(),
+                idTipo,
                 documento.getEstatus(),
                 documento.getCantidadDocumentos()
         );
@@ -40,7 +39,6 @@ public class DocumentoController {
     public ResponseEntity<List<Documento>> obtenerTodosLosDocumentos() {
         List<Documento> documentos = documentoDAO.obtenerDocumentos();
         return ResponseEntity.ok(documentos);
-
     }
 
     @GetMapping("/{folio}")
@@ -49,7 +47,7 @@ public class DocumentoController {
         if (documento != null) {
             return ResponseEntity.ok(documento);
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
 
     @GetMapping("/estatus/{estatus}")
@@ -58,15 +56,27 @@ public class DocumentoController {
         return ResponseEntity.ok(documentos);
     }
 
-    @GetMapping("/tipo/{tipo}")
-    public ResponseEntity<List<Documento>> buscarPorTipo(@PathVariable String tipo) {
-        List<Documento> documentos = documentoDAO.buscarDocumentosPorTipo(tipo);
+    @GetMapping("/tipo/{idTipo}")
+    public ResponseEntity<List<Documento>> buscarPorTipo(@PathVariable int idTipo) {
+        List<Documento> documentos = documentoDAO.buscarDocumentosPorTipo(idTipo);
         return ResponseEntity.ok(documentos);
     }
 
     @PutMapping("/{folio}")
     public ResponseEntity<String> actualizarDocumento(@PathVariable int folio, @RequestBody Documento documento) {
-        boolean resultado = documentoDAO.actualizarDocumento(documento, folio);
+        // obtener el id del tipo de documento
+        int idTipo = documentoDAO.obtenerIdTipoPorNombre(documento.getTipoDocumento());
+        if (idTipo == -1) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tipo de documento no válido");
+        }
+
+        Documento documentoActualizado = new Documento();
+        documentoActualizado.setFolio(documento.getFolio());
+        documentoActualizado.setTipoDocumento(documento.getTipoDocumento());
+        documentoActualizado.setEstatus(documento.getEstatus());
+        documentoActualizado.setCantidadDocumentos(documento.getCantidadDocumentos());
+
+        boolean resultado = documentoDAO.actualizarDocumento(documentoActualizado, folio);
         if (resultado) {
             return ResponseEntity.ok("Documento actualizado exitosamente");
         }
@@ -80,5 +90,11 @@ public class DocumentoController {
             return ResponseEntity.ok("Documento eliminado exitosamente");
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al eliminar documento");
+    }
+    
+    @GetMapping("/tipos-documento")
+    public ResponseEntity<List<TipoDocumento>> obtenerTiposDocumento() {
+        List<TipoDocumento> tipos = documentoDAO.obtenerTiposDocumento();
+        return ResponseEntity.ok(tipos);
     }
 }

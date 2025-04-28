@@ -2,6 +2,7 @@ com\example\sipre_backend\config\AppConfig.class
 com\example\sipre_backend\SipreApplication.class
 com\example\sipre_backend\modelo\Usuario.class
 com\example\sipre_backend\repositorio\UsuarioDAO.class
+com\example\sipre_backend\modelo\TipoDocumento.class
 com\example\sipre_backend\repositorio\SolicitudDAO.class
 com\example\sipre_backend\controlador\SolicitudController.class
 com\example\sipre_backend\modelo\Inventario.class
