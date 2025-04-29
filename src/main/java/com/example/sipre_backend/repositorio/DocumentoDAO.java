@@ -2,7 +2,6 @@ package com.example.sipre_backend.repositorio;
 
 import com.example.sipre_backend.repositorio.db.MySQLConnection;
 import com.example.sipre_backend.modelo.Documento;
-import com.example.sipre_backend.modelo.TipoDocumento;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -213,23 +212,6 @@ public class DocumentoDAO {
             e.printStackTrace();
         }
         return -1;
-    }
-
-    public List<TipoDocumento> obtenerTiposDocumento() {
-        List<TipoDocumento> tipos = new ArrayList<>();
-        String sql = "SELECT * FROM tipos_documento";
-        try (Connection connection = MySQLConnection.getConnection(); PreparedStatement stmt = connection.prepareStatement(sql)) {
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                TipoDocumento tipo = new TipoDocumento();
-                tipo.setId(rs.getInt("ID_Tipo"));
-                tipo.setNombre(rs.getString("Nombre"));
-                tipos.add(tipo);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return tipos;
     }
 
     // alta de documentos
