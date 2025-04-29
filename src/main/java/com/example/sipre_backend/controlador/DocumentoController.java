@@ -1,5 +1,6 @@
 package com.example.sipre_backend.controlador;
 
+import com.example.sipre_backend.modelo.AltaDocumentosRequest;
 import com.example.sipre_backend.modelo.Documento;
 import com.example.sipre_backend.modelo.TipoDocumento;
 import com.example.sipre_backend.repositorio.DocumentoDAO;
@@ -91,10 +92,28 @@ public class DocumentoController {
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al eliminar documento");
     }
-    
+
     @GetMapping("/tipos-documento")
     public ResponseEntity<List<TipoDocumento>> obtenerTiposDocumento() {
         List<TipoDocumento> tipos = documentoDAO.obtenerTiposDocumento();
         return ResponseEntity.ok(tipos);
     }
+
+    @PostMapping("/alta-lote")
+    public ResponseEntity<String> altaDocumentosPorRango(@RequestBody AltaDocumentosRequest request) {
+        boolean resultado = documentoDAO.agregarDocumentosPorRango(
+                request.getTipoDocumento(),
+                request.getCantidad(),
+                request.getFolioInicial(),
+                request.getFolioFinal(),
+                request.getFechaIngreso(),
+                request.getIdUsuario()
+        );
+
+        if (resultado) {
+            return ResponseEntity.status(HttpStatus.CREATED).body("Formatos agregados exitosamente");
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al agregar formatos");
+    }
+
 }
