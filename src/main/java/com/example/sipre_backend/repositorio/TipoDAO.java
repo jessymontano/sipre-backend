@@ -38,7 +38,7 @@ public class TipoDAO {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 TipoFormatoPreimpreso tipo = new TipoFormatoPreimpreso();
-                tipo.setID_Tipo(rs.getInt("ID_Tipo"));
+                tipo.setIdTipo(rs.getInt("ID_Tipo"));
                 tipo.setNombre(rs.getString("Nombre"));
                 tipos.add(tipo);
             }
