@@ -1,30 +1,31 @@
 package com.example.sipre_backend.modelo;
 
 public class TipoFormatoPreimpreso {
-    public int ID_Tipo;
-    public String Nombre;
+
+    private int iD_Tipo;
+
+    private String nombre;
+
+    public TipoFormatoPreimpreso() {}
 
     public TipoFormatoPreimpreso(int ID_Tipo, String Nombre) {
-
-        this.ID_Tipo = ID_Tipo;
-        this.Nombre = Nombre;
+        this.iD_Tipo = ID_Tipo;
+        this.nombre = Nombre;
     }
 
-    public TipoFormatoPreimpreso() {
-
-    }
-    public int getID_Tipo(){
-        return ID_Tipo;
+    public int getID_Tipo() {
+        return iD_Tipo;
     }
 
     public void setID_Tipo(int ID_Tipo) {
-        this.ID_Tipo = ID_Tipo;
+        this.iD_Tipo = ID_Tipo;
+    }
+
+    public String getNombre() {
+        return nombre;
     }
 
     public void setNombre(String Nombre) {
-        this.Nombre = Nombre;
-    }
-    public String getNombre() {
-        return Nombre;
+        this.nombre = Nombre;
     }
 }

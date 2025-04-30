@@ -13,9 +13,11 @@ import java.util.List;
 public class TipoController {
     private final List<TipoFormatoPreimpreso> tipos = new ArrayList<>();
 
+    private int nextId = 1; // contador
     // Agregar nuevo tipo
     @PostMapping
     public ResponseEntity<String> agregarTipo(@RequestBody TipoFormatoPreimpreso tipo) {
+        tipo.setID_Tipo(nextId++); // asignar ID único
         tipos.add(tipo);
         return ResponseEntity.status(HttpStatus.CREATED).body("Tipo creado exitosamente");
     }
