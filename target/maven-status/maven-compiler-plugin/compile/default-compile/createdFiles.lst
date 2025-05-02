@@ -2,13 +2,17 @@ com\example\sipre_backend\config\AppConfig.class
 com\example\sipre_backend\SipreApplication.class
 com\example\sipre_backend\modelo\Usuario.class
 com\example\sipre_backend\repositorio\UsuarioDAO.class
+com\example\sipre_backend\modelo\AltaDocumentosRequest.class
 com\example\sipre_backend\repositorio\SolicitudDAO.class
 com\example\sipre_backend\controlador\SolicitudController.class
 com\example\sipre_backend\modelo\Inventario.class
 com\example\sipre_backend\repositorio\GenerarReportes.class
 com\example\sipre_backend\modelo\Documento.class
 com\example\sipre_backend\modelo\Solicitud.class
+com\example\sipre_backend\modelo\TipoFormatoPreimpreso.class
 com\example\sipre_backend\controlador\UsuarioController.class
+com\example\sipre_backend\repositorio\TipoDAO.class
 com\example\sipre_backend\repositorio\DocumentoDAO.class
 com\example\sipre_backend\controlador\DocumentoController.class
 com\example\sipre_backend\repositorio\db\MySQLConnection.class
+com\example\sipre_backend\controlador\TipoController.class
