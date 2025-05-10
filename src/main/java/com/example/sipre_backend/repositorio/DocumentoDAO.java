@@ -15,15 +15,14 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class DocumentoDAO {
 
-    public boolean agregarDocumento(int Folio, int ID_Tipo, String Estatus, int CantidadDocumentos) {
-        String query = "INSERT INTO sipre.documentos (Folio, ID_Tipo, Estatus, CantidadDocumentos) VALUES (?, ?, ?, ?)";
+    public boolean agregarDocumento(int Folio, int ID_Tipo, String Estatus) {
+        String query = "INSERT INTO sipre.documentos (Folio, ID_Tipo, Estatus) VALUES (?, ?, ?)";
 
         try (Connection connection = MySQLConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(query)) {
 
             statement.setInt(1, Folio);
             statement.setInt(2, ID_Tipo);
             statement.setString(3, Estatus);
-            statement.setInt(4, CantidadDocumentos);
 
             int filasInsertadas = statement.executeUpdate();
             return filasInsertadas > 0;
@@ -35,7 +34,7 @@ public class DocumentoDAO {
     }
 
     public List<Documento> buscarDocumentosPorEstatus(String estatus) {
-        String sql = "SELECT d.Folio, td.Nombre AS TipoDocumento, d.ID_Tipo AS IdTipo, d.Estatus, d.CantidadDocumentos "
+        String sql = "SELECT d.Folio, td.Nombre AS TipoDocumento, d.ID_Tipo AS IdTipo, d.Estatus "
                 + "FROM sipre.documentos d "
                 + "LEFT JOIN sipre.tipos_documento td ON d.ID_Tipo = td.ID_Tipo "
                 + "WHERE d.Estatus = ?";
@@ -52,7 +51,6 @@ public class DocumentoDAO {
                 documento.setTipoDocumento(rs.getString("TipoDocumento"));
                 documento.setIdTipo(rs.getInt("IdTipo"));
                 documento.setEstatus(rs.getString("Estatus"));
-                documento.setCantidadDocumentos(rs.getInt("CantidadDocumentos"));
 
                 documentos.add(documento);
             }
@@ -65,7 +63,7 @@ public class DocumentoDAO {
     }
 
     public Documento buscarDocumentoPorFolio(int folio) {
-        String sql = "SELECT d.Folio, td.Nombre AS TipoDocumento, d.ID_Tipo AS IdTipo, d.Estatus, d.CantidadDocumentos "
+        String sql = "SELECT d.Folio, td.Nombre AS TipoDocumento, d.ID_Tipo AS IdTipo, d.Estatus "
                 + "FROM sipre.documentos d "
                 + "LEFT JOIN sipre.tipos_documento td ON d.ID_Tipo = td.ID_Tipo "
                 + "WHERE d.Folio = ?";
@@ -82,7 +80,6 @@ public class DocumentoDAO {
                 documento.setTipoDocumento(rs.getString("TipoDocumento"));
                 documento.setIdTipo(rs.getInt("IdTipo"));
                 documento.setEstatus(rs.getString("Estatus"));
-                documento.setCantidadDocumentos(rs.getInt("CantidadDocumentos"));
             }
 
         } catch (SQLException e) {
@@ -92,7 +89,7 @@ public class DocumentoDAO {
     }
 
     public List<Documento> buscarDocumentosPorTipo(int idTipo) {
-        String sql = "SELECT d.Folio, td.Nombre AS TipoDocumento, d.ID_Tipo AS IdTipo, d.Estatus, d.CantidadDocumentos "
+        String sql = "SELECT d.Folio, td.Nombre AS TipoDocumento, d.ID_Tipo AS IdTipo, d.Estatus "
                 + "FROM sipre.documentos d "
                 + "JOIN sipre.tipos_documento td ON d.ID_Tipo = td.ID_Tipo "
                 + "WHERE d.ID_Tipo = ?";
@@ -109,7 +106,6 @@ public class DocumentoDAO {
                 documento.setTipoDocumento(rs.getString("TipoDocumento"));
                 documento.setIdTipo(rs.getInt("IdTipo"));
                 documento.setEstatus(rs.getString("Estatus"));
-                documento.setCantidadDocumentos(rs.getInt("CantidadDocumentos"));
 
                 documentos.add(documento);
             }
@@ -121,7 +117,7 @@ public class DocumentoDAO {
     }
 
     public List<Documento> obtenerDocumentos() {
-        String sql = "SELECT d.Folio, td.Nombre AS TipoDocumento, d.ID_Tipo AS IdTipo, d.Estatus, d.CantidadDocumentos "
+        String sql = "SELECT d.Folio, td.Nombre AS TipoDocumento, d.ID_Tipo AS IdTipo, d.Estatus "
                 + "FROM sipre.documentos d "
                 + "JOIN sipre.tipos_documento td ON d.ID_Tipo = td.ID_Tipo";
         List<Documento> documentos = new ArrayList<>();
@@ -134,7 +130,6 @@ public class DocumentoDAO {
                 documento.setTipoDocumento(rs.getString("TipoDocumento"));
                 documento.setIdTipo(rs.getInt("IdTipo"));
                 documento.setEstatus(rs.getString("Estatus"));
-                documento.setCantidadDocumentos(rs.getInt("CantidadDocumentos"));
 
                 documentos.add(documento);
             }
@@ -166,12 +161,11 @@ public class DocumentoDAO {
             return false;
         }
 
-        String sql = "UPDATE sipre.documentos SET Folio = ?, ID_Tipo = ?, CantidadDocumentos = ? WHERE Folio = ?";
+        String sql = "UPDATE sipre.documentos SET Folio = ?, ID_Tipo = ? WHERE Folio = ?";
         try (Connection connection = MySQLConnection.getConnection(); PreparedStatement stmt = connection.prepareStatement(sql)) {
 
             stmt.setInt(1, documento.getFolio());
             stmt.setInt(2, idTipo);
-            stmt.setInt(3, documento.getCantidadDocumentos());
             stmt.setInt(4, folioAnterior);
 
             int filasAfectadas = stmt.executeUpdate();
@@ -214,128 +208,78 @@ public class DocumentoDAO {
         return -1;
     }
 
-    // alta de documentos
-    public boolean agregarDocumentosPorRango(String tipoDocumento, int cantidad, int folioInicial, Integer folioFinal, String fechaIngreso, int idUsuario) {
-        // Validaciones iniciales
-        if (cantidad <= 0) {
-            System.err.println("La cantidad debe ser mayor que cero");
+    public boolean agregarDocumentos(String tipoDocumento, int cantidad, String fechaIngreso, int idUsuario) {
+    if (cantidad <= 0) {
+        System.err.println("La cantidad debe ser mayor que cero");
+        return false;
+    }
+
+    Connection connection = null;
+    PreparedStatement insertDocumento = null;
+    PreparedStatement insertMovimiento = null;
+
+    try {
+        connection = MySQLConnection.getConnection();
+        connection.setAutoCommit(false);
+
+        int idTipo = obtenerIdTipoPorNombre(tipoDocumento);
+        if (idTipo == -1) {
+            System.err.println("Tipo de documento no válido: " + tipoDocumento);
             return false;
         }
 
-        if (folioInicial <= 0) {
-            System.err.println("El folio inicial debe ser mayor que cero");
-            return false;
-        }
+        // Sentencias actualizadas sin Folio (se autogenera)
+        String sqlDocumento = "INSERT INTO sipre.documentos (ID_Tipo, Estatus) VALUES (?, ?)";
+        String sqlMovimiento = "INSERT INTO sipre.movimientos_inventario (Fecha, Tipo_Movimiento, Cantidad, ID_Usuario, ID_Solicitud, ID_Documentos) VALUES (?, ?, ?, ?, NULL, ?)";
 
-        if (folioFinal != null && folioFinal <= 0) {
-            System.err.println("El folio final debe ser mayor que cero");
-            return false;
-        }
+        insertDocumento = connection.prepareStatement(sqlDocumento, Statement.RETURN_GENERATED_KEYS);
+        insertMovimiento = connection.prepareStatement(sqlMovimiento);
 
-        if (folioFinal != null && folioFinal < folioInicial) {
-            System.err.println("El folio final no puede ser menor que el folio inicial");
-            return false;
-        }
+        for (int i = 0; i < cantidad; i++) {
+            insertDocumento.setInt(1, idTipo);
+            insertDocumento.setString(2, "En bodega");
+            insertDocumento.executeUpdate();
 
-        Connection connection = null;
-        PreparedStatement insertDocumento = null;
-        PreparedStatement insertMovimiento = null;
-        PreparedStatement checkFolio = null;
-
-        try {
-            connection = MySQLConnection.getConnection();
-            connection.setAutoCommit(false);
-
-            int idTipo = obtenerIdTipoPorNombre(tipoDocumento);
-            if (idTipo == -1) {
-                System.err.println("Tipo de documento no válido: " + tipoDocumento);
-                return false;
-            }
-
-            // Calcular folioFinal si no se proporcionó
-            if (folioFinal == null) {
-                folioFinal = folioInicial + cantidad - 1;
+            ResultSet generatedKeys = insertDocumento.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                int idDocumentoGenerado = generatedKeys.getInt(1);
+                insertMovimiento.setString(1, fechaIngreso);
+                insertMovimiento.setString(2, "entrada");
+                insertMovimiento.setInt(3, 1);
+                insertMovimiento.setInt(4, idUsuario);
+                insertMovimiento.setInt(5, idDocumentoGenerado);
+                insertMovimiento.executeUpdate();
             } else {
-                // Validar que la cantidad coincida con el rango
-                int rangoCalculado = folioFinal - folioInicial + 1;
-                if (rangoCalculado != cantidad) {
-                    System.err.println("La cantidad no coincide con el rango de folios");
-                    return false;
-                }
+                throw new SQLException("No se pudo obtener el ID del documento insertado.");
             }
+        }
 
-            // Verificar si los folios ya existen
-            String checkSql = "SELECT COUNT(*) FROM sipre.documentos WHERE Folio BETWEEN ? AND ?";
-            checkFolio = connection.prepareStatement(checkSql);
-            checkFolio.setInt(1, folioInicial);
-            checkFolio.setInt(2, folioFinal);
-            ResultSet rs = checkFolio.executeQuery();
+        connection.commit();
+        return true;
 
-            if (rs.next() && rs.getInt(1) > 0) {
-                System.err.println("Algunos folios en el rango ya existen");
-                return false;
+    } catch (SQLException e) {
+        System.err.println("Error en la transacción: " + e.getMessage());
+        try {
+            if (connection != null) {
+                connection.rollback();
             }
-
-            String sqlDocumento = "INSERT INTO sipre.documentos (Folio, ID_Tipo, Estatus, CantidadDocumentos) VALUES (?, ?, ?, ?)";
-            String sqlMovimiento = "INSERT INTO sipre.movimientos_inventario (Fecha, Tipo_Movimiento, Cantidad, ID_Usuario, ID_Solicitud, ID_Documentos) VALUES (?, ?, ?, ?, NULL, ?)";
-
-            insertDocumento = connection.prepareStatement(sqlDocumento, Statement.RETURN_GENERATED_KEYS);
-            insertMovimiento = connection.prepareStatement(sqlMovimiento);
-
-            for (int folio = folioInicial; folio <= folioFinal; folio++) {
-                // Insertar documento
-                insertDocumento.setInt(1, folio);
-                insertDocumento.setInt(2, idTipo);
-                insertDocumento.setString(3, "En bodega");
-                insertDocumento.setInt(4, 1);
-                insertDocumento.executeUpdate();
-
-                ResultSet generatedKeys = insertDocumento.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    int idDocumentoGenerado = generatedKeys.getInt(1);
-                    insertMovimiento.setString(1, fechaIngreso);
-                    insertMovimiento.setString(2, "entrada");
-                    insertMovimiento.setInt(3, 1);
-                    insertMovimiento.setInt(4, idUsuario);
-                    insertMovimiento.setInt(5, idDocumentoGenerado); 
-                    insertMovimiento.executeUpdate();
-                } else {
-                    throw new SQLException("No se pudo obtener el ID del documento insertado.");
-                }
+        } catch (SQLException ex) {
+            System.err.println("Error al hacer rollback: " + ex.getMessage());
+        }
+        return false;
+    } finally {
+        try {
+            if (insertDocumento != null) insertDocumento.close();
+            if (insertMovimiento != null) insertMovimiento.close();
+            if (connection != null) {
+                connection.setAutoCommit(true);
+                connection.close();
             }
-
-            connection.commit();
-            return true;
-
         } catch (SQLException e) {
-            System.err.println("Error en la transacción: " + e.getMessage());
-            try {
-                if (connection != null) {
-                    connection.rollback();
-                }
-            } catch (SQLException ex) {
-                System.err.println("Error al hacer rollback: " + ex.getMessage());
-            }
-            return false;
-        } finally {
-            try {
-                if (checkFolio != null) {
-                    checkFolio.close();
-                }
-                if (insertDocumento != null) {
-                    insertDocumento.close();
-                }
-                if (insertMovimiento != null) {
-                    insertMovimiento.close();
-                }
-                if (connection != null) {
-                    connection.setAutoCommit(true);
-                    connection.close();
-                }
-            } catch (SQLException e) {
-                System.err.println("Error al cerrar recursos: " + e.getMessage());
-            }
+            System.err.println("Error al cerrar recursos: " + e.getMessage());
         }
     }
+}
+
 
 }

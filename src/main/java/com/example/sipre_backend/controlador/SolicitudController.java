@@ -25,7 +25,7 @@ public class SolicitudController {
     
     @PostMapping
     public ResponseEntity<String> agregarSolicitud(@RequestBody Solicitud solicitud) {
-        boolean resultado = solicitudDAO.agregarSolicitud(solicitud.getFolio(), solicitud.tipoDocumento, solicitud.getFecha(), solicitud.getMotivo());
+        boolean resultado = solicitudDAO.agregarSolicitud(solicitud.getFolio(), solicitud.getIdTipo(), solicitud.getFecha(), solicitud.getMotivo(), solicitud.getIdUsuario());
         if (resultado) {
             return ResponseEntity.status(HttpStatus.CREATED).body("Solicitud creada exitosamente");
         }
@@ -60,7 +60,7 @@ public class SolicitudController {
     }
     
     @GetMapping("/buscar/tipo/{tipoDocumento}")
-    public ResponseEntity<List<Solicitud>> buscarSolicitudesPorTipo(@PathVariable String tipoDocumento) {
+    public ResponseEntity<List<Solicitud>> buscarSolicitudesPorTipo(@PathVariable int tipoDocumento) {
         List<Solicitud> solicitudes = solicitudDAO.buscarSolicitudesPorTipo(tipoDocumento);
         return ResponseEntity.ok(solicitudes);
     }
@@ -77,5 +77,14 @@ public class SolicitudController {
     public ResponseEntity<List<Solicitud>> obtenerTodasLasSolicitudes() {
         List<Solicitud> solicitudes = solicitudDAO.obtenerSolicitudes();
         return ResponseEntity.ok(solicitudes);
+    }
+    
+    @GetMapping("/tipo/id")
+    public ResponseEntity<Integer> obtenerIdPorNombre(@RequestParam String nombre) {
+        int idTipo = solicitudDAO.obtenerIdTipoPorNombre(nombre);
+        if (idTipo != -1) {
+            return ResponseEntity.ok(idTipo);
+        }
+        return ResponseEntity.notFound().build();
     }
 }

@@ -1,4 +1,5 @@
 package com.example.sipre_backend.repositorio;
+
 import com.example.sipre_backend.repositorio.db.MySQLConnection;
 import com.example.sipre_backend.modelo.Solicitud;
 
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class SolicitudDAO {
 
-    public boolean agregarSolicitud(int Folio, String TipoDocumento, java.util.Date Fecha_Solicitud, String Motivo) {
+    public boolean agregarSolicitud(int folio, int idTipo, java.util.Date fechaSolicitud, String motivo, int idUsuario) {
         // Consulta para verificar si el folio existe en la tabla de documentos
         String queryBusquedaFolio = "SELECT COUNT(*) FROM sipre.documentos WHERE Folio = ?";
 
@@ -18,7 +19,7 @@ public class SolicitudDAO {
              PreparedStatement stmtBusqueda = connection.prepareStatement(queryBusquedaFolio)) {
 
             // Establecer el valor del folio en la consulta de búsqueda
-            stmtBusqueda.setInt(1, Folio);
+            stmtBusqueda.setInt(1, folio);
             ResultSet rs = stmtBusqueda.executeQuery();
 
             // Verificar si el folio existe
@@ -26,7 +27,7 @@ public class SolicitudDAO {
                 // El folio existe, primero verificamos el estatus actual
                 String queryEstatus = "SELECT Estatus FROM sipre.documentos WHERE Folio = ?";
                 try (PreparedStatement stmtEstatus = connection.prepareStatement(queryEstatus)) {
-                    stmtEstatus.setInt(1, Folio);
+                    stmtEstatus.setInt(1, folio);
                     ResultSet rsEstatus = stmtEstatus.executeQuery();
 
                     if (rsEstatus.next()) {
@@ -38,29 +39,30 @@ public class SolicitudDAO {
                     }
 
                     // El folio no tiene el estatus 'Solicitado', ahora podemos insertar en la tabla solicitud
-                    String queryInsert = "INSERT INTO sipre.solicitud (Folio, TipoDocumento, Fecha_Solicitud, Motivo) VALUES (?, ?, ?, ?)";
+                    String queryInsert = "INSERT INTO sipre.solicitud (Folio, ID_Tipo, Fecha_Solicitud, Motivo, ID_Usuario) VALUES (?, ?, ?, ?, ?)";
 
                     try (PreparedStatement stmtInsert = connection.prepareStatement(queryInsert)) {
                         // Convertir java.util.Date a java.sql.Date si es necesario
-                        java.sql.Date sqlDate = new java.sql.Date(Fecha_Solicitud.getTime());
+                        java.sql.Date sqlDate = new java.sql.Date(fechaSolicitud.getTime());
 
-                        stmtInsert.setInt(1, Folio);
-                        stmtInsert.setString(2, TipoDocumento);
-                        stmtInsert.setDate(3, sqlDate);  // Establecer la fecha convertida
-                        stmtInsert.setString(4, Motivo);
+                        stmtInsert.setInt(1, folio);
+                        stmtInsert.setInt(2, idTipo);
+                        stmtInsert.setDate(3, sqlDate);
+                        stmtInsert.setString(4, motivo);
+                        stmtInsert.setInt(5, idUsuario);
 
-                        int filasInsertadas = stmtInsert.executeUpdate(); // Ejecutar la inserción
+                        int filasInsertadas = stmtInsert.executeUpdate();
                         if (filasInsertadas > 0) {
                             // Si la inserción fue exitosa, actualizar el estatus del folio en documentos
                             String queryUpdateEstatus = "UPDATE sipre.documentos SET Estatus = 'Solicitado' WHERE Folio = ?";
 
                             try (PreparedStatement stmtUpdate = connection.prepareStatement(queryUpdateEstatus)) {
-                                stmtUpdate.setInt(1, Folio);
-                                int filasActualizadas = stmtUpdate.executeUpdate(); // Ejecutar la actualización del estatus
-                                return filasActualizadas > 0; // Retorna true si el estatus fue actualizado correctamente
+                                stmtUpdate.setInt(1, folio);
+                                int filasActualizadas = stmtUpdate.executeUpdate();
+                                return filasActualizadas > 0;
                             }
                         }
-                        return false; // Si no se insertó en la tabla solicitud, retornamos false
+                        return false;
                     }
                 }
 
@@ -72,31 +74,29 @@ public class SolicitudDAO {
 
         } catch (SQLException e) {
             e.printStackTrace();
-            return false; // En caso de error en la conexión o ejecución
+            return false;
         }
     }
 
     public boolean cancelarSolicitud(int folio) {
-        String sqlEliminarSolicitud = "DELETE FROM sipre.solicitud WHERE Folio = ?";  // Eliminar solicitud
-        String sqlActualizarEstatus = "UPDATE sipre.documentos SET Estatus = 'En bodega' WHERE Folio = ?";  // Actualizar estatus en documentos
+        String sqlEliminarSolicitud = "DELETE FROM sipre.solicitud WHERE Folio = ?";
+        String sqlActualizarEstatus = "UPDATE sipre.documentos SET Estatus = 'En bodega' WHERE Folio = ?";
 
         try (Connection connection = MySQLConnection.getConnection();
              PreparedStatement stmtEliminar = connection.prepareStatement(sqlEliminarSolicitud);
              PreparedStatement stmtActualizarEstatus = connection.prepareStatement(sqlActualizarEstatus)) {
 
             // Eliminar la solicitud
-            stmtEliminar.setInt(1, folio);  // Establecer el folio
+            stmtEliminar.setInt(1, folio);
             int filasAfectadas = stmtEliminar.executeUpdate();
 
             if (filasAfectadas > 0) {
                 // Si se eliminó la solicitud, actualizar el estatus del documento
                 stmtActualizarEstatus.setInt(1, folio);
                 int filasActualizadas = stmtActualizarEstatus.executeUpdate();
-
-                // Si el estatus fue actualizado correctamente, retorna true
                 return filasActualizadas > 0;
             } else {
-                return false; // No se eliminó la solicitud
+                return false;
             }
 
         } catch (SQLException e) {
@@ -106,47 +106,53 @@ public class SolicitudDAO {
     }
 
     public Solicitud buscarSolicitud(int folio) {
-        String sql = "SELECT * FROM sipre.solicitud WHERE Folio = ?";
+        String sql = "SELECT s.*, td.Nombre AS TipoDocumento FROM sipre.solicitud s " +
+                     "JOIN sipre.tipos_documento td ON s.ID_Tipo = td.ID_Tipo " +
+                     "WHERE s.Folio = ?";
         Solicitud solicitud = null;
 
         try (Connection connection = MySQLConnection.getConnection();
              PreparedStatement stmt = connection.prepareStatement(sql)) {
 
-            stmt.setInt(1, folio); // Establece el valor del folio en la consulta
+            stmt.setInt(1, folio);
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                // Si encuentra la solicitud, la crea y asigna sus valores
                 solicitud = new Solicitud();
                 solicitud.setFolio(rs.getInt("Folio"));
-                solicitud.setTipoDocumento(rs.getString("TipoDocumento"));
+                solicitud.setIdTipo(rs.getInt("ID_Tipo"));
+                solicitud.setTipoDocumento(rs.getString("TipoDocumento")); // Para compatibilidad
                 solicitud.setFecha(rs.getDate("Fecha_Solicitud"));
                 solicitud.setMotivo(rs.getString("Motivo"));
+                solicitud.setIdUsuario(rs.getInt("ID_Usuario"));
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return solicitud; // Retorna la solicitud o null si no la encuentra
+        return solicitud;
     }
 
-
-    public List<Solicitud> buscarSolicitudesPorTipo(String tipoDocumento) {
-        String sql = "SELECT * FROM sipre.solicitud WHERE TipoDocumento = ?";
+    public List<Solicitud> buscarSolicitudesPorTipo(int idTipo) {
+        String sql = "SELECT s.*, td.Nombre AS TipoDocumento FROM sipre.solicitud s " +
+                     "JOIN sipre.tipos_documento td ON s.ID_Tipo = td.ID_Tipo " +
+                     "WHERE s.ID_Tipo = ?";
         List<Solicitud> solicitudes = new ArrayList<>();
 
         try (Connection connection = MySQLConnection.getConnection();
              PreparedStatement stmt = connection.prepareStatement(sql)) {
 
-            stmt.setString(1, tipoDocumento); // Establece el tipo de documento en la consulta
+            stmt.setInt(1, idTipo);
             ResultSet rs = stmt.executeQuery();
 
-            while (rs.next()) { // Usamos while para recorrer todas las coincidencias
+            while (rs.next()) {
                 Solicitud solicitud = new Solicitud();
                 solicitud.setFolio(rs.getInt("Folio"));
+                solicitud.setIdTipo(rs.getInt("ID_Tipo"));
                 solicitud.setTipoDocumento(rs.getString("TipoDocumento"));
                 solicitud.setFecha(rs.getDate("Fecha_Solicitud"));
                 solicitud.setMotivo(rs.getString("Motivo"));
+                solicitud.setIdUsuario(rs.getInt("ID_Usuario"));
 
                 solicitudes.add(solicitud);
             }
@@ -154,10 +160,13 @@ public class SolicitudDAO {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return solicitudes; // Retorna la lista de solicitudes
+        return solicitudes;
     }
+
     public List<Solicitud> buscarSolicitudPorMesAnio(int anio, int mes) {
-        String sql = "SELECT * FROM sipre.solicitud WHERE YEAR(Fecha_Solicitud) = ? AND MONTH(Fecha_Solicitud) = ?";
+        String sql = "SELECT s.*, td.Nombre AS TipoDocumento FROM sipre.solicitud s " +
+                     "JOIN sipre.tipos_documento td ON s.ID_Tipo = td.ID_Tipo " +
+                     "WHERE YEAR(Fecha_Solicitud) = ? AND MONTH(Fecha_Solicitud) = ?";
         List<Solicitud> solicitudes = new ArrayList<>();
 
         try (Connection connection = MySQLConnection.getConnection();
@@ -170,9 +179,11 @@ public class SolicitudDAO {
             while (rs.next()) {
                 Solicitud solicitud = new Solicitud();
                 solicitud.setFolio(rs.getInt("Folio"));
+                solicitud.setIdTipo(rs.getInt("ID_Tipo"));
                 solicitud.setTipoDocumento(rs.getString("TipoDocumento"));
                 solicitud.setFecha(rs.getDate("Fecha_Solicitud"));
                 solicitud.setMotivo(rs.getString("Motivo"));
+                solicitud.setIdUsuario(rs.getInt("ID_Usuario"));
                 solicitudes.add(solicitud);
             }
         } catch (SQLException e) {
@@ -181,28 +192,9 @@ public class SolicitudDAO {
         return solicitudes;
     }
 
-    public String obtenerTipoDocumentoPorFolio(int folio) {
-        String query = "SELECT TipoDocumento FROM sipre.documentos WHERE Folio = ?";
-
-        try (Connection connection = MySQLConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-
-            statement.setInt(1, folio);  // Establece el folio en el query
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getString("TipoDocumento");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return null;  // Si no se encuentra el folio, retorna null
-    }
-
     public List<Solicitud> obtenerSolicitudes() {
-        String sql = "SELECT * FROM sipre.solicitud";
+        String sql = "SELECT s.*, td.Nombre AS TipoDocumento FROM sipre.solicitud s " +
+                     "JOIN sipre.tipos_documento td ON s.ID_Tipo = td.ID_Tipo";
         List<Solicitud> solicitudes = new ArrayList<>();
 
         try (Connection connection = MySQLConnection.getConnection();
@@ -211,9 +203,11 @@ public class SolicitudDAO {
             while (rs.next()) {
                 Solicitud solicitud = new Solicitud();
                 solicitud.setFolio(rs.getInt("Folio"));
+                solicitud.setIdTipo(rs.getInt("ID_Tipo"));
                 solicitud.setTipoDocumento(rs.getString("TipoDocumento"));
                 solicitud.setFecha(rs.getDate("Fecha_Solicitud"));
                 solicitud.setMotivo(rs.getString("Motivo"));
+                solicitud.setIdUsuario(rs.getInt("ID_Usuario"));
                 solicitudes.add(solicitud);
             }
 
@@ -224,19 +218,19 @@ public class SolicitudDAO {
     }
 
     public boolean actualizarSolicitud(Solicitud solicitud) {
-        String sql = "UPDATE sipre.solicitud SET TipoDocumento = ?, Fecha_Solicitud = ?, Motivo = ? WHERE Folio = ?";
+        String sql = "UPDATE sipre.solicitud SET ID_Tipo = ?, Fecha_Solicitud = ?, Motivo = ? WHERE Folio = ?";
         try (Connection connection = MySQLConnection.getConnection();
              PreparedStatement stmt = connection.prepareStatement(sql)) {
 
             java.sql.Date sqlDate = new java.sql.Date(solicitud.getFecha().getTime());
 
-            stmt.setString(1, solicitud.getTipoDocumento());
+            stmt.setInt(1, solicitud.getIdTipo());
             stmt.setDate(2, sqlDate);
             stmt.setString(3, solicitud.getMotivo());
             stmt.setInt(4, solicitud.getFolio());
 
             int filasAfectadas = stmt.executeUpdate();
-            return filasAfectadas > 0; // Retorna true si se actualizo la solicitud
+            return filasAfectadas > 0;
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -244,5 +238,20 @@ public class SolicitudDAO {
         }
     }
 
-}
+    public int obtenerIdTipoPorNombre(String nombreTipo) {
+        String query = "SELECT ID_Tipo FROM sipre.tipos_documento WHERE Nombre = ?";
+        try (Connection connection = MySQLConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
 
+            statement.setString(1, nombreTipo);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return resultSet.getInt("ID_Tipo");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+}

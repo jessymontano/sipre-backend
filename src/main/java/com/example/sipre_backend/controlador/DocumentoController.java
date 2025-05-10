@@ -26,8 +26,7 @@ public class DocumentoController {
         boolean resultado = documentoDAO.agregarDocumento(
                 documento.getFolio(),
                 idTipo,
-                documento.getEstatus(),
-                documento.getCantidadDocumentos()
+                documento.getEstatus()
         );
         if (resultado) {
             return ResponseEntity.status(HttpStatus.CREATED).body("Documento creado exitosamente");
@@ -74,7 +73,6 @@ public class DocumentoController {
         documentoActualizado.setFolio(documento.getFolio());
         documentoActualizado.setTipoDocumento(documento.getTipoDocumento());
         documentoActualizado.setEstatus(documento.getEstatus());
-        documentoActualizado.setCantidadDocumentos(documento.getCantidadDocumentos());
 
         boolean resultado = documentoDAO.actualizarDocumento(documentoActualizado, folio);
         if (resultado) {
@@ -94,11 +92,9 @@ public class DocumentoController {
 
     @PostMapping("/alta-lote")
     public ResponseEntity<String> altaDocumentosPorRango(@RequestBody AltaDocumentosRequest request) {
-        boolean resultado = documentoDAO.agregarDocumentosPorRango(
+        boolean resultado = documentoDAO.agregarDocumentos(
                 request.getTipoDocumento(),
                 request.getCantidad(),
-                request.getFolioInicial(),
-                request.getFolioFinal(),
                 request.getFechaIngreso(),
                 request.getIdUsuario()
         );
