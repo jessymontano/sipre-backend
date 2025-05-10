@@ -6,6 +6,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import java.io.ByteArrayOutputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class ExcelExportService {
@@ -27,13 +29,14 @@ public class ExcelExportService {
                 row.createCell(0).setCellValue(doc.getFolio());
                 row.createCell(1).setCellValue(doc.getTipoDocumento());
                 row.createCell(2).setCellValue(doc.getEstatus());
-                row.createCell(3).setCellValue(doc.getCantidadDocumentos());
             }
 
             workbook.write(out);
 
             HttpHeaders headers = new HttpHeaders();
-            headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ExcelReporte.xlsx");
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmm"));
+            String nombreArchivo = "ExcelReporte_" + timestamp + ".xlsx";
+            headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + nombreArchivo);
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 
             return ResponseEntity

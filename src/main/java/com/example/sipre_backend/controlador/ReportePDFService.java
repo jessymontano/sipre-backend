@@ -5,8 +5,11 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfWriter;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.encoders.EncoderUtil;
 import org.jfree.chart.encoders.ImageFormat;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 import org.springframework.http.HttpHeaders;
@@ -18,6 +21,8 @@ import java.awt.*;
 import com.itextpdf.text.Image;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -58,7 +63,10 @@ public class ReportePDFService {
             document.close();
 
             HttpHeaders headers = new HttpHeaders();
-            headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ReporteDocumentos.pdf");
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmm"));
+            String nombreArchivo = "ReporteDocumentos_" + timestamp + ".pdf";
+
+            headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + nombreArchivo);
             headers.setContentType(MediaType.APPLICATION_PDF);
 
             return ResponseEntity.ok().headers(headers).body(baos.toByteArray());
@@ -76,6 +84,14 @@ public class ReportePDFService {
         agrupado.forEach((tipo, cantidad) -> dataset.addValue(cantidad, "Documentos", tipo));
 
         JFreeChart chart = ChartFactory.createBarChart("Documentos por Tipo", "Tipo", "Cantidad", dataset);
+
+        // Obtener el eje del dominio (eje X)
+        CategoryPlot plot = chart.getCategoryPlot();
+        CategoryAxis axis = plot.getDomainAxis();
+
+        // Configurar la rotación de las etiquetas del eje X
+        axis.setCategoryLabelPositions(CategoryLabelPositions.UP_45); // Rotación de 45 grados
+
         chart.setBackgroundPaint(Color.white);
         return EncoderUtil.encode(chart.createBufferedImage(600, 400), ImageFormat.PNG);
     }
@@ -99,6 +115,12 @@ public class ReportePDFService {
         agrupado.forEach((tipo, cantidad) -> dataset.addValue(cantidad, "Documentos", tipo));
 
         JFreeChart chart = ChartFactory.createLineChart("Documentos por Tipo", "Tipo", "Cantidad", dataset);
+
+        // Rotar etiquetas del eje X (dominio)
+        CategoryPlot plot = chart.getCategoryPlot();
+        plot.getDomainAxis().setCategoryLabelPositions(CategoryLabelPositions.UP_45);
+
+
         chart.setBackgroundPaint(Color.white);
         return EncoderUtil.encode(chart.createBufferedImage(600, 400), ImageFormat.PNG);
     }
