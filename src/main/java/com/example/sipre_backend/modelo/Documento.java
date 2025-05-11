@@ -2,23 +2,23 @@ package com.example.sipre_backend.modelo;
 
 import java.util.Date;
 
-public class Documento{
+public class Documento {
     private int folio;
     private String tipoDocumento;
     private int idTipo;
     private String estatus;
-    private int cantidadDocumentos;
 
 
-    public Documento(int Folio, String TipoDocumento, String Estatus, int CantidadDocumentos) {
+
+    public Documento(int Folio, String TipoDocumento, String Estatus) {
         this.folio = Folio;
         this.tipoDocumento = TipoDocumento;
         this.estatus = Estatus;
-        this.cantidadDocumentos = CantidadDocumentos;
     }
 
     public Documento() {
     }
+
 
     public int getFolio() {
         return  folio;
@@ -41,14 +41,6 @@ public class Documento{
     public void setEstatus(String Estatus) {
         this.estatus = Estatus;
     }
-    public int getCantidadDocumentos(){
-        return cantidadDocumentos;
-    }
-
-    public void setCantidadDocumentos(int CantidadDocumentos) {
-        this.cantidadDocumentos = CantidadDocumentos;
-    }
-
     public int getIdTipo() {
         return idTipo;
     }
@@ -56,5 +48,4 @@ public class Documento{
     public void setIdTipo(int id) {
         this.idTipo = id;
     }
-}
-
+    }
