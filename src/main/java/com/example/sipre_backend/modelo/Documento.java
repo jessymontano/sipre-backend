@@ -49,6 +49,3 @@ public class Documento {
         this.idTipo = id;
     }
     }
-
-
-
