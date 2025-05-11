@@ -20,7 +20,6 @@ public class ExcelExportService {
             headerRow.createCell(0).setCellValue("Folio");
             headerRow.createCell(1).setCellValue("Tipo Documento");
             headerRow.createCell(2).setCellValue("Estatus");
-            headerRow.createCell(3).setCellValue("Cantidad Documentos");
 
             // Contenido
             int rowNum = 1;
